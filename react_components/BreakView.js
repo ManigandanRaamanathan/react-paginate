@@ -2,31 +2,31 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { View, Text, TouchableOpacity } from "react-native";
 
 const BreakView = props => {
-  const { breakLabel, breakClassName, breakLinkClassName, onClick } = props;
-  const className = breakClassName || 'break';
+  const { breakLabel, breakContainer, breakText, onPress } = props;
+  const className = breakContainer || {};
 
   return (
-    <li className={className}>
-      <a
-        className={breakLinkClassName}
-        onClick={onClick}
-        role="button"
-        tabIndex="0"
-        onKeyPress={onClick}
+    <View style={className}>
+      <TouchableOpacity
+        onPress={onPress}
       >
-        {breakLabel}
-      </a>
-    </li>
+        <Text style={breakText} >
+          {breakLabel}
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 BreakView.propTypes = {
   breakLabel: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
-  breakClassName: PropTypes.string,
+  breakContainer: PropTypes.object,
+  breakText: PropTypes.object,
   breakLinkClassName: PropTypes.string,
-  onClick: PropTypes.func.isRequired,
+  onPress: PropTypes.func.isRequired,
 };
 
 export default BreakView;
