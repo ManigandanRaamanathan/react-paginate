@@ -2,12 +2,13 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { View, Text, TouchableOpacity } from "react-native";
 
 const PageView = props => {
-  let pageClassName = props.pageClassName;
-  let pageLinkClassName = props.pageLinkClassName;
+  let pageContainer = props.pageContainer;
+  let pageText = props.pageText;
 
-  const onClick = props.onClick;
+  const onPress = props.onPress;
   const href = props.href;
   let ariaLabel =
     props.ariaLabel ||
@@ -22,44 +23,39 @@ const PageView = props => {
     ariaLabel =
       props.ariaLabel || 'Page ' + props.page + ' is your current page';
 
-    if (typeof pageClassName !== 'undefined') {
-      pageClassName = pageClassName + ' ' + props.activeClassName;
+    if (typeof pageContainer !== 'undefined') {
+      pageContainer = pageContainer + ' ' + props.activeClassName;
     } else {
-      pageClassName = props.activeClassName;
+      pageContainer = props.activeClassName;
     }
 
-    if (typeof pageLinkClassName !== 'undefined') {
+    if (typeof pageText !== 'undefined') {
       if (typeof props.activeLinkClassName !== 'undefined') {
-        pageLinkClassName = pageLinkClassName + ' ' + props.activeLinkClassName;
+        pageText = pageText + ' ' + props.activeLinkClassName;
       }
     } else {
-      pageLinkClassName = props.activeLinkClassName;
+      pageText = props.activeLinkClassName;
     }
   }
 
   return (
-    <li className={pageClassName}>
-      <a
-        onClick={onClick}
-        role="button"
-        className={pageLinkClassName}
+    <View style={props.pageContainer}>
+      <TouchableOpacity
+        onPress={onPress}
         href={href}
-        tabIndex="0"
-        aria-label={ariaLabel}
-        aria-current={ariaCurrent}
-        onKeyPress={onClick}
       >
-        {props.page}
-      </a>
-    </li>
+        <Text style={[pageText, (props.selected+1) == props.page? props.selectedText: {}]}>{props.page}</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 PageView.propTypes = {
-  onClick: PropTypes.func.isRequired,
-  selected: PropTypes.bool.isRequired,
-  pageClassName: PropTypes.string,
-  pageLinkClassName: PropTypes.string,
+  onPress: PropTypes.func.isRequired,
+  selected: PropTypes.number,
+  pageContainer: PropTypes.object,
+  pageText: PropTypes.object,
+  selectedText: PropTypes.object,
   activeClassName: PropTypes.string,
   activeLinkClassName: PropTypes.string,
   extraAriaContext: PropTypes.string,
