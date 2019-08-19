@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import PageView from './PageView';
 import BreakView from './BreakView';
+import { View, Text, TouchableOpacity } from "react-native";
 
 export default class PaginationBoxView extends Component {
   static propTypes = {
@@ -18,9 +19,10 @@ export default class PaginationBoxView extends Component {
     initialPage: PropTypes.number,
     forcePage: PropTypes.number,
     disableInitialCallback: PropTypes.bool,
-    containerClassName: PropTypes.string,
-    pageClassName: PropTypes.string,
-    pageLinkClassName: PropTypes.string,
+    containerStyle: PropTypes.object,
+    pageContainer: PropTypes.object,
+    pageText: PropTypes.object,
+    selectedText: PropTypes.object,
     activeClassName: PropTypes.string,
     activeLinkClassName: PropTypes.string,
     previousClassName: PropTypes.string,
@@ -28,10 +30,15 @@ export default class PaginationBoxView extends Component {
     previousLinkClassName: PropTypes.string,
     nextLinkClassName: PropTypes.string,
     disabledClassName: PropTypes.string,
-    breakClassName: PropTypes.string,
+    breakContainer: PropTypes.object,
+    breakText: PropTypes.object,
     breakLinkClassName: PropTypes.string,
     extraAriaContext: PropTypes.string,
     ariaLabelBuilder: PropTypes.func,
+    previousComponent: PropTypes.func,
+    previousContainer: PropTypes.object,
+    nextComponent: PropTypes.func,
+    nextContainer: PropTypes.object
   };
 
   static defaultProps = {
@@ -46,10 +53,26 @@ export default class PaginationBoxView extends Component {
     breakLabel: '...',
     disabledClassName: 'disabled',
     disableInitialCallback: false,
+    initializeSelected: () => null,
+    previousComponent: () => null,
+    nextComponent: () => null,
+    previousContainer: {},
+    nextContainer: {}
   };
 
   constructor(props) {
     super(props);
+
+    this.initializeSelected = this.initializeSelected.bind(this);
+
+  }
+
+  state = {
+    selected: 0,
+  };
+
+  initializeSelected = () => {
+    const props = this.props;
 
     let initialSelected;
     if (props.initialPage) {
@@ -60,17 +83,22 @@ export default class PaginationBoxView extends Component {
       initialSelected = 0;
     }
 
-    this.state = {
-      selected: initialSelected,
-    };
+    this.setState({
+      selected: initialSelected
+    })
   }
 
   componentDidMount() {
+    this.props.initializeSelected(this.initializeSelected);
+
     const {
       initialPage,
       disableInitialCallback,
       extraAriaContext,
     } = this.props;
+
+    this.initializeSelected();
+
     // Call the callback with the initialPage item:
     if (typeof initialPage !== 'undefined' && !disableInitialCallback) {
       this.callCallback(initialPage);
@@ -111,6 +139,8 @@ export default class PaginationBoxView extends Component {
   };
 
   handlePageSelected = (selected, evt) => {
+    // console.warn('handlePageSelected selected:'+selected+' evt:'+evt);
+
     evt.preventDefault ? evt.preventDefault() : (evt.returnValue = false);
 
     if (this.state.selected === selected) return;
@@ -189,8 +219,9 @@ export default class PaginationBoxView extends Component {
   getPageElement(index) {
     const { selected } = this.state;
     const {
-      pageClassName,
-      pageLinkClassName,
+      pageContainer,
+      pageText,
+      selectedText,
       activeClassName,
       activeLinkClassName,
       extraAriaContext,
@@ -199,10 +230,11 @@ export default class PaginationBoxView extends Component {
     return (
       <PageView
         key={index}
-        onClick={this.handlePageSelected.bind(null, index)}
-        selected={selected === index}
-        pageClassName={pageClassName}
-        pageLinkClassName={pageLinkClassName}
+        onPress={this.handlePageSelected.bind(null, index)}
+        selected={selected} //selected === index
+        pageContainer={pageContainer}
+        pageText={pageText}
+        selectedText={selectedText}
         activeClassName={activeClassName}
         activeLinkClassName={activeLinkClassName}
         extraAriaContext={extraAriaContext}
@@ -220,7 +252,8 @@ export default class PaginationBoxView extends Component {
       pageCount,
       marginPagesDisplayed,
       breakLabel,
-      breakClassName,
+      breakContainer,
+      breakText,
       breakLinkClassName,
     } = this.props;
 
@@ -288,9 +321,10 @@ export default class PaginationBoxView extends Component {
             <BreakView
               key={index}
               breakLabel={breakLabel}
-              breakClassName={breakClassName}
+              breakContainer={breakContainer}
+              breakText={breakText}
               breakLinkClassName={breakLinkClassName}
-              onClick={this.handleBreakClick.bind(null, index)}
+              onPress={this.handleBreakClick.bind(null, index)}
             />
           );
           items.push(breakView);
@@ -307,56 +341,54 @@ export default class PaginationBoxView extends Component {
       previousClassName,
       nextClassName,
       pageCount,
-      containerClassName,
+      containerStyle,
       previousLinkClassName,
       previousLabel,
+      previousComponent,
       nextLinkClassName,
       nextLabel,
+      nextComponent,
+      previousContainer,
+      nextContainer
     } = this.props;
 
     const { selected } = this.state;
 
-    const previousClasses =
-      previousClassName + (selected === 0 ? ` ${disabledClassName}` : '');
-    const nextClasses =
-      nextClassName +
-      (selected === pageCount - 1 ? ` ${disabledClassName}` : '');
+    // const previousContainer =
+    //   previousClassName + (selected === 0 ? ` ${disabledClassName}` : '');
+    // const nextContainer =
+    //   nextClassName +
+    //   (selected === pageCount - 1 ? ` ${disabledClassName}` : '');
 
     const previousAriaDisabled = selected === 0 ? 'true' : 'false';
     const nextAriaDisabled = selected === pageCount - 1 ? 'true' : 'false';
 
     return (
-      <ul className={containerClassName}>
-        <li className={previousClasses}>
-          <a
-            onClick={this.handlePreviousPage}
-            className={previousLinkClassName}
+      <View style={[{flexDirection: 'row', flex: 1}, containerStyle]}>
+        <View style={[{justifyContent: 'flex-start'}, previousContainer]}>
+          <TouchableOpacity
+            onPress={this.handlePreviousPage}
             href={this.hrefBuilder(selected - 1)}
-            tabIndex="0"
-            role="button"
-            onKeyPress={this.handlePreviousPage}
             aria-disabled={previousAriaDisabled}
           >
-            {previousLabel}
-          </a>
-        </li>
+            {previousComponent()? previousComponent() : <Text>{previousLabel}</Text>}
+          </TouchableOpacity>
+        </View>
 
         {this.pagination()}
 
-        <li className={nextClasses}>
-          <a
-            onClick={this.handleNextPage}
-            className={nextLinkClassName}
+        <View style={[{justifyContent: 'flex-end'}, nextContainer]}>
+          <TouchableOpacity
+            onPress={this.handleNextPage}
             href={this.hrefBuilder(selected + 1)}
             tabIndex="0"
             role="button"
-            onKeyPress={this.handleNextPage}
             aria-disabled={nextAriaDisabled}
           >
-            {nextLabel}
-          </a>
-        </li>
-      </ul>
+            {nextComponent()? nextComponent() : <Text>{nextLabel}</Text>}
+          </TouchableOpacity>
+        </View>
+      </View>
     );
   }
 }
