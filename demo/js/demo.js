@@ -81,15 +81,47 @@ export class App extends Component {
           previousLabel={'previous'}
           nextLabel={'next'}
           breakLabel={'...'}
-          breakClassName={'break-me'}
+          breakText={Styles.renderTableContentRegular}
+          breakContainer={{
+              paddingHorizontal: wp(0.9)
+          }}
+          containerStyle={{
+              // justifyContent: 'center'
+              paddingHorizontal: wp(1),
+              alignItems: 'center'
+          }}
+          pageContainer={{
+              paddingHorizontal: wp(1)
+          }}
+          pageText={Styles.renderTableContentRegular}
+          selectedText={{
+              color: Colors.primaryP1
+          }}
+          previousContainer={{
+              paddingRight: wp(1)
+          }}
+          previousComponent={()=>{
+              return <Image
+                  source={require('@Images/arrows/caretinactivert-glyph.png')}
+                  style={{height: wp(2.6), width: wp(2.6), tintColor: Colors.primaryP4}}
+              />
+          }}
+          nextContainer={{
+              paddingLeft: wp(1)
+          }}
+          nextComponent={()=>{
+              return <Image
+                  source={require('@Images/arrows/caretinactivelft-glyph.png')}
+                  style={{height: wp(2.6), width: wp(2.6), tintColor: Colors.primaryP4}}
+              />
+          }}
           pageCount={this.state.pageCount}
-          marginPagesDisplayed={2}
-          pageRangeDisplayed={5}
+          marginPagesDisplayed={3}
+          pageRangeDisplayed={2}
           onPageChange={this.handlePageClick}
-          containerClassName={'pagination'}
-          subContainerClassName={'pages pagination'}
-          activeClassName={'active'}
-        />
+          initialPage={this.state.selectedPage}
+          initializeSelected={(ref)=>this.initializeSelected = ref}
+      />
       </div>
     );
   }
